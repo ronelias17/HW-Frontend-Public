@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edit User</title>
+
+    <!-- jquery cdn-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="crossorigin="anonymous"></script>
+    <script src="scripts/AjaxCall.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/editUser.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+
+    <script>
+        let serverURL = 'https://proj.ruppin.ac.il/cgroup5/test2/tar1/api/Users/Update/';
+        let loggedUser;
+
+        function ifUserLogged() { 
+            loggedUser = localStorage.getItem('loggedUser');
+            if (!loggedUser) { 
+                window.location.href = 'login.html'; 
+            }
+            loggedUser = JSON.parse(loggedUser);
+            let reqURL = `https://proj.ruppin.ac.il/cgroup5/test2/tar1/api/Users/IsActive/${loggedUser.id}`
+            ajaxCall("POST",reqURL,null,function(res) {
+                if(res === false)
+                {
+                    alert("User Is not active anymore! contact the admins")
+                    localStorage.removeItem('loggedUser')
+                    window.location.href = 'index.html'; 
+                }
+            },function() { 
+                alert("We Run into an issue, Please Login again")
+                localStorage.removeItem('loggedUser')
+                window.location.href = 'login.html'; 
+            });
+        }
+        ifUserLogged();
+
+        function checkBtnState() {
+            if($('input[type="checkbox"]:checked').length === 0)
+                $('.submitBtn').prop('disabled', true);
+            else
+                $('.submitBtn').prop('disabled', false);
+        }
+
+        $(document).ready(function () {
+
+            $('#emailCB').on('change', function () {
+                $('#emailBN').prop('disabled', !this.checked).val("");
+                checkBtnState();
+            });
+
+            $('#passwordCB').on('change', function () {
+                $('#passwordBN').prop('disabled', !this.checked).val("");
+                checkBtnState();
+            });
+
+            $('#nameCB').on('change', function () {
+                $('#nameBN').prop('disabled', !this.checked).val("");
+                checkBtnState();
+            });
+
+            $('.cancelBtn').on('click',function(){
+                window.location.href = 'index.html'; 
+            })
+
+            $('#editForm').submit(function (event) {
+                event.preventDefault();
+                var registerData = {
+                    Name:  $('#nameBN').val(),
+                    Email:  $('#emailBN').val(),
+                    Password: $('#passwordBN').val(),
+                    Active: true
+                };
+                let sendURL = serverURL+`${loggedUser.id}`;
+                ajaxCall("PUT", sendURL, JSON.stringify(registerData), SCB, ECB);
+            })
+        })
+
+        function SCB(response) {
+            if (response === true) {
+                $('#message').html('Your Account was updated, <span id="rotate">↻</span> Redirecting to Home page.').css('color', 'black').fadeIn();
+                $('#emailBN, #passwordBN, #nameBN, input[name="isActive"]').prop('disabled', true).css('background-color', '#b0b0b093');
+                $('.submitBtn, .cancelBtn').prop('disabled',true)
+
+                if($('#nameBN').val() != "") {
+                    loggedUser.name = $('#nameBN').val();
+                    localStorage.setItem('loggedUser',JSON.stringify(loggedUser));
+                }
+
+                setTimeout(function() {
+                    window.location.href = `index.html`;
+                }, 4000); 
+            } else {
+                $('#message').html(`<span id="rotate">❌</span>Couldn't update your fields, try again`).fadeIn().delay(5000).fadeOut();
+            }
+        }
+
+        function ECB(err) {
+            console.error("Error fetching data:", err);
+        }
+
+    </script>
+
+</head>
+<body>
+    <header>
+        <nav>
+            <div id="navOption"><a href="index.html">🏠 Home</a></div>
+            <div id="navOption" class="active"> <a href="myMovies.html">🎬 My Movies</a></div>
+            <div id="navOption"><a href="newMovie.html">📝 Create New Movie</a></div>
+        </nav>
+        <nav>
+            <div id="navOption"><a href="EditUser.html">⚙️ Edit My Profile</a></div>
+            <div id="navOption" class="logoutBtn"><a href="login.html">⍈ Logout</a></div>
+        </nav>
+    </header>
+
+    <form id="editForm">
+        <div>
+            <h1>Edit Profile</h1>
+            <p class="info">Select What To Update, You must Select At least One</p>
+        </div>
+        
+        <label for="email">Email
+            <label class="switch">
+                <input type="checkbox" id="emailCB">
+                <span class="slider round"></span>
+            </label>
+        </label>
+        <input type = "text" id = "emailBN" name = "email" placeholder="Enter your New Email here" pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" 
+            title="Please enter a valid Email Address!" disabled required>
+        
+        <label for="password">Password
+            <label class="switch">
+                <input type="checkbox" id="passwordCB">
+                <span class="slider round"></span>
+            </label>
+        </label>
+
+        <input type="password" id="passwordBN" name="password" placeholder="Enter your New Password here" pattern="^(?=.*[A-Z])(?=.*\d).{8,}$" 
+            title="Password must be at least 8 characters long, contain at least one uppercase letter and one number!" disabled required>
+
+        <label for="Name">Name
+            <label class="switch">
+                <input type="checkbox" id="nameCB">
+                <span class="slider round"></span>
+            </label>
+        </label>
+        <input type = "text" id = "nameBN" name = "name" placeholder="Enter your New Name here" pattern="^[A-Za-z]{2,}$" disabled required>
+
+        <div id="btnDiv">
+            
+            <input type="submit" class="submitBtn" value="Update" disabled>
+            <input type="button" class="cancelBtn" value="Cancel">
+        </div>
+        <div id="message" style="display: none;" ></div>
+    </form>
+</body>
+</html>

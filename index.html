@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Home</title>
+
+    <!-- jquery cdn-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="crossorigin="anonymous"></script>
+    <script src="scripts/AjaxCall.js"></script>
+    <script src="scripts/CreateCard.js"></script>
+    <script src="scripts/CreateRentForm.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/movieCards.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+
+    <script>
+        let loggedUser, TotalPages, TotalMovies;
+        let ItemsPerPage = 6;
+        let CurrentPage = 1;
+        const serverURL = 'https://proj.ruppin.ac.il/cgroup5/test2/tar1/api/Movies/';
+        let requestSelectedMovies = "all";
+        
+        $(document).ready(onLoad);
+
+        function onLoad() { 
+            ifUserLogged();
+            $("#searchBtn").click(filterSearch)
+            $(".logoutBtn").on('click',function() {
+                localStorage.removeItem('loggedUser')
+                }
+            )
+
+            $('input[name="filter"]').on('change', function () {
+                let value = $(this).val();
+                let textInput = $('.option input[type="text"]');
+                let dateInput = $('.option input[type="date"]');
+                let button = $('.option button');
+
+                textInput.val('').prop('disabled', true);
+                dateInput.val('').prop('disabled', true);
+                button.prop('disabled', true);
+
+                if (value === 'text') {
+                    textInput.prop('disabled', false);
+                    button.prop('disabled', false);
+                } else if (value === 'all') {
+                    requestSelectedMovies = "all";
+                    $("#itemsPerPage").val(6);
+                    requestGetCount();
+                } else {
+                    dateInput.prop('disabled', false);
+                    button.prop('disabled', false);
+                }
+            });
+
+            requestGetCount();
+        }
+
+        function requestGetCount() {
+            let reqURL;
+            if(requestSelectedMovies === "all")
+                reqURL = serverURL+`GetAllMoviesCount`;
+            else if(requestSelectedMovies === "byTitle")
+                reqURL = serverURL+`GetByTitleCount/${encodeURIComponent($('#textTitle').val())}`;
+            else if(requestSelectedMovies === "byDate") 
+                reqURL = serverURL+`GetByReleaseDateCount/from/${encodeURIComponent($('#startDate').val())}/until/${encodeURIComponent($('#endDate').val())}`;
+            
+            ajaxCall("GET", reqURL, "", function(resultCount) {
+                TotalMovies = resultCount;
+                TotalPages = Math.ceil(TotalMovies / ItemsPerPage);
+                updatePaginationUI();
+                requestGetMovies()
+            }, ECB);
+        }
+
+        function requestGetMovies()
+        {
+            let reqURL;
+            let offset = (CurrentPage-1)*ItemsPerPage;
+            
+            if(requestSelectedMovies === "all")
+                reqURL = serverURL+`GetAllMovies/${offset}/${ItemsPerPage}`;
+            else if(requestSelectedMovies === "byTitle")
+                reqURL = serverURL+`GetByTitle/${encodeURIComponent($('#textTitle').val())}/${offset}/${ItemsPerPage}`;
+            else if(requestSelectedMovies === "byDate") 
+                reqURL = serverURL+`GetByReleaseDate/from/${encodeURIComponent($('#startDate').val())}/until/${encodeURIComponent($('#endDate').val())}/${offset}/${ItemsPerPage}`;
+            
+            ajaxCall("GET", reqURL, "", function(resultArray) {
+                renderMovies(resultArray);
+            }, function(err) {
+                console.error("Error fetching data:", err);
+            });
+        }
+
+        function ifUserLogged() { 
+            loggedUser = localStorage.getItem('loggedUser');
+
+            if(loggedUser) {
+                loggedUser = JSON.parse(loggedUser);
+                rightNav = $('#rightNav');
+                rightNav.html("")
+
+                let EditDiv = $('<div>',{id:'navOption'}).append(
+                    $('<a>', { href: 'EditUser.html', text: '⚙️ Edit My Profile'})
+                );
+                rightNav.append(EditDiv)
+
+                let LogoutDiv = $('<div>',{id:'navOption'}).append(
+                    $('<a>', { href: 'index.html', text: '⍈ Logout'}).addClass("logoutBtn")
+                );
+                rightNav.append(LogoutDiv)
+
+                $(".logoutBtn").on('click',function() {
+                    localStorage.removeItem('loggedUser')
+                    }
+                )
+                let reqURL = `https://proj.ruppin.ac.il/cgroup5/test2/tar1/api/Users/IsActive/${loggedUser.id}`
+                ajaxCall("POST",reqURL,null,function(res) {
+                    if(res === false)
+                    {
+                        alert("User Is not active anymore! contact the admins")
+                        localStorage.removeItem('loggedUser')
+                        window.location.href = 'index.html'; 
+                    }
+                },function() { 
+                    alert("We Run into an issue, Please Login again")
+                    localStorage.removeItem('loggedUser')
+                    window.location.href = 'login.html'; 
+                });
+
+                $('#msgDiv h1').text(`Welcome ${loggedUser.name}`);
+            } else {
+                $('#msgP').html(`You are not logged in, Login required to fully use the site!`).css('text-align','center');
+                $('#leftNav :nth-child(3),#leftNav :nth-child(3) a,#leftNav :nth-child(2),#leftNav :nth-child(2) a').addClass('mute')
+                $('#leftNav :nth-child(3) a,#leftNav :nth-child(2) a').on('click',function(e) {
+                    e.preventDefault();
+                    window.location.href = 'login.html'; 
+                })
+            }
+        }
+
+        function ECB(err){
+            console.error("Error fetching data:", err);
+        }
+        
+        function filterSearch() {
+            let filterType = $('input[name="filter"]:checked').val();
+
+            if (filterType === 'text') {
+                let title = $('#textTitle').val().trim();
+                if (title === "") {
+                    alert("Input cannot be empty !!!");
+                    return;
+                }
+                requestSelectedMovies = "byTitle";
+            }
+            else if (filterType === 'date') {
+                let start = $('#startDate').val();
+                let end = $('#endDate').val();
+
+                if (start === "" || end === "") {
+                    alert("Please select both start and end dates.");
+                    return;
+                }
+                if (start > end) {
+                    alert("Start date cannot be after end date.");
+                    return;
+                }
+                requestSelectedMovies = "byDate";
+            }
+            // reset pagination and reload
+            $("#itemsPerPage").val(6);
+            changeItemsPerPage(6);
+        }
+
+        function renderMovies(movies) {
+            $("#container").empty();
+            if(movies.length === 0) {
+                alert("Nothing was found");
+                return
+            }
+
+            movies.forEach(movie => { 
+                let movieCard = CreateCard(movie);
+
+                let rentButton = document.createElement('button')
+                rentButton.innerHTML = "Rent";
+                rentButton.id = "btn"
+                movieCard.append(rentButton);
+
+                rentButton.addEventListener('click', function () {
+                    if(loggedUser) {
+                        showRentMovie(movie);
+                    } else {
+                        window.location.href = 'login.html'; 
+                    }
+                });
+
+                rentButton.addEventListener('mouseover', function() {
+                    movieCard.classList.add('hover');
+                });
+
+                rentButton.addEventListener('mouseout', function() {
+                    movieCard.classList.remove('hover');
+                });
+                $("#container").append(movieCard);
+            });
+        }
+
+        function updatePaginationUI() {
+            $('#pageInfo').text(`${CurrentPage} of ${TotalPages}`)
+            $('#prevBtn').prop('disabled', CurrentPage <= 1)
+            $('#nextBtn').prop('disabled', CurrentPage >= TotalPages)
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > TotalPages) return;
+            CurrentPage = page;
+            requestGetMovies();
+            updatePaginationUI();
+        }
+
+        function changeItemsPerPage(value) {
+            ItemsPerPage = parseInt(value);
+            CurrentPage = 1;
+            requestGetCount()
+        }
+
+        function showRentMovie(movie) {
+            const overlay = document.createElement("div");
+            overlay.id = "overlay-div";
+
+            const form = CreateRentForm(movie)
+            overlay.append(form);
+            document.body.append(overlay);
+
+            const rentDateInput =  $('#rentDate')[0];
+            const totalPriceDisplay = $('#totalPriceDisplay')[0];
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            rentDateInput.min = tomorrow.toISOString().split("T")[0];
+
+            rentDateInput.addEventListener("input", () => {
+                const selectedDate = new Date(rentDateInput.value);
+                if (selectedDate > today) {
+                    const diffDays = Math.ceil((selectedDate - today) / (1000 * 60 * 60 * 24));
+                    const total = diffDays * movie.priceToRent;
+                    totalPriceDisplay.textContent = `Total Price: $${total} (${diffDays} day${diffDays > 1 ? 's' : ''})`;
+                } else {
+                    totalPriceDisplay.textContent = `Total Price: $0 (0 days)`;
+                }
+            });
+
+            $('#overlay-div').on('click', handleOverlayClick);
+            $('#cancelRent').on('click',() => {
+                overlay.remove();
+            })
+
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const selectedDate = new Date(rentDateInput.value);
+
+                if (selectedDate <= today) // safe check
+                    return;
+
+                const diffDays = Math.ceil((selectedDate - today) / (1000 * 60 * 60 * 24));
+                const total = diffDays * movie.priceToRent;
+
+                var RentedMovieDTO = {
+                    UserID: loggedUser.id,
+                    MovieID: movie.id,
+                    RentStart: new Date(),
+                    RentEnd: selectedDate,
+                    TotalPrice: total
+                };
+
+                let reqURL = serverURL + `RentMovie`;
+                ajaxCall("POST", reqURL, JSON.stringify(RentedMovieDTO), function (res) {
+                    if(res === true) {
+                        $('#cancelRent, #confirmBtn, #rentDate').prop('disabled',true);
+                        $('#overlay-div').off('click', handleOverlayClick);
+                        $('<div></div>')
+                            .addClass('msg')
+                            .html(`Movie rented successfully!, Reloading Page <span id="rotate">↻</span>`)
+                            .hide()
+                            .appendTo(form)
+                            .fadeIn(300)
+                            .delay(4000)
+                            .fadeOut(300, function () {
+                                window.location.href = 'index.html'; 
+                        });
+                    } else
+                        FailedRent();
+                 }, FailedRent);
+            });
+        }
+
+        function handleOverlayClick(e) {
+            if (e.target === $('#overlay-div')[0]) $('#overlay-div').remove();
+        }
+
+        function FailedRent()
+        {
+            let form = $('.rent-form')
+            $('#cancelRent, #confirmBtn, #rentDate').prop('disabled',true);
+            $('#overlay-div').off('click', handleOverlayClick);
+            $('<div></div>')
+                .addClass('msg')
+                .html("Renting failed. Please try again later.")
+                .hide()
+                .appendTo(form)
+                .fadeIn(300)
+                .delay(4000)
+                .fadeOut(300, function () {
+                    window.location.href = 'index.html'; 
+            });
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <nav id="leftNav">
+            <div id="navOption" class="active"><a href="index.html">🏠 Home</a></div>
+            <div id="navOption"><a href="myMovies.html">🎬 My Movies</a></div>
+            <div id="navOption"><a href="newMovie.html">📝 Create New Movie</a></div>
+        </nav>
+        <nav id="rightNav">
+            <div id="navOption"><a href="login.html">👤 Login</a></div>
+            <div id="navOption"><a href="register.html">🪪 Register</a></div>
+        </nav>
+    </header>
+    <div id="msgDiv"> 
+        <h1 id="title">Welcome</h1>
+        <p id="msgP">Here you can rent an movie, click on your desired one<br>
+        Doing so will open an renting form.</p>
+        <div class="option">
+            <input type="radio" name="filter" value="all" checked >
+            <label>View All</label>
+        </div>
+        <div class="option">
+            <input type="radio" name="filter" value="text">
+            <label>Title</label>
+            <input disabled type="text" id="textTitle">
+        </div>
+        <div class="option">
+            <input type="radio" name="filter" value="date">
+            <label>Dates</label><br>
+            <div id="dates">
+                <label>From: </label> 
+                <input disabled type="date" id="startDate">
+                <label>Until: </label>
+                <input disabled type="date" id="endDate">
+            </div>
+            <button id="searchBtn" disabled>Search</button>
+        </div>
+        <div id="pagination">
+            <div>
+                <button onclick="goToPage(CurrentPage - 1)" id="prevBtn">&lt;</button>
+                <span id="pageInfo">1 of 1</span>
+                <button onclick="goToPage(CurrentPage + 1)" id="nextBtn">&gt;</button>
+            </div>
+
+            <div>
+                <p for="itemsPerPage">Movies per page:</p>
+                <select id="itemsPerPage" onchange="changeItemsPerPage(this.value)">
+                    <option value="6" selected>6</option>
+                    <option value="12">12</option>
+                    <option value="18">18</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div id="container"></div>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create New Movie</title>
+
+    <!-- jquery , ajax -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="crossorigin="anonymous"></script>
+    <script src="scripts/AjaxCall.js"></script>
+
+    <!--select2 imports-->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!--css imports-->
+    <link rel="stylesheet" type="text/css" href="css/newMovie.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+
+    <script>
+        let loggedUser 
+        function ifUserLogged() { 
+            loggedUser = localStorage.getItem('loggedUser');
+            if (!loggedUser) { 
+                window.location.href = 'login.html'; 
+            }
+            loggedUser = JSON.parse(loggedUser);
+            let reqURL = `https://proj.ruppin.ac.il/cgroup5/test2/tar1/api/Users/IsActive/${loggedUser.id}`
+            ajaxCall("POST",reqURL,null,function(res) {
+                if(res === false)
+                {
+                    alert("User Is not active anymore! contact the admins")
+                    localStorage.removeItem('loggedUser')
+                    window.location.href = 'index.html'; 
+                }
+            },function() { 
+                alert("We Run into an issue, Please Login again")
+                localStorage.removeItem('loggedUser')
+                window.location.href = 'login.html'; 
+            });
+        }
+        ifUserLogged();
+
+        $(document).ready(onLoad);
+
+        function onLoad() {
+            serverURL = 'https://proj.ruppin.ac.il/cgroup5/test2/tar1/api/Movies/';
+            getLangAndGenre()
+            applyInputLogicChecks()
+
+            $('#movieForm').submit( function(event) {
+                event.preventDefault()
+                SubmitMovie();
+            });
+           
+            $(".logoutBtn").on('click',function() {
+                localStorage.removeItem('loggedUser')
+                }
+            )
+        }
+
+        function SubmitMovie()
+        {
+            var Movie = {
+                url: $("#urlBN").val(),
+                primaryTitle : $("#primaryTitleBN").val(),
+                description :  $("#descriptionBN").val(),
+                primaryImage :  $("#primaryImageBN").val(),
+                year :  $("#YearBN").val(),
+                releaseDate :  $("#dateBN").val(),
+                language :  $("#languageBN").val(),
+                budget :  $("#budgetBN").val(),
+                grossWorldwide :  $("#grossWorldwideBN").val(),
+                genres :  ($("#genresBN").val()).join(),
+                isAdult : ($('input[name="isAdultBN"]:checked').val() === "true"),
+                runtimeMinutes :  $("#runtimeBN").val(),
+                averageRating :  $("#ratingBN").val(),
+                numVotes :  $("#numVotesBN").val(),
+            }
+            let sendURL = serverURL+"Insert";
+            ajaxCall("POST",sendURL,JSON.stringify(Movie),function(res) {
+                if(res) {
+                    $('select,input,textarea').prop('disabled',true).css('background-color', '#b0b0b093');
+                    $('button').prop('disabled',true);
+                    $('#movieForm h1').html('✅ New Movie Form ✅')
+                    $('#message').css('display','block').html(`<p>🍿The Movie Was Successfully Added to your Movie list🍿<br>
+                        You can Visit <a href="myMovies.html">My Movies</a> to Check Your New Movie<br>
+                        Or Click <a href="newMovie.html">Here</a> To Create a New Movie</p>`).fadeIn(4000);
+                } else {
+                    $('#message').css('display','block').addClass("error").html(`<p>⛔ Movie With This Title Already Exits ⛔<br>Please Choose Another Title 🙏🏻</p>`)
+                    .fadeIn( function() {
+                        let titleBN = $("#primaryTitleBN")[0];
+                        titleBN.setCustomValidity("Please Select Another Title");
+                        titleBN.reportValidity();
+                        titleBN.validity.valid = false;
+                        $('button').prop('disabled',true);
+                        }
+                    ).delay(6000).fadeOut( function () {
+                        $(this).css('display', 'none').removeClass('error');
+                        $('button').prop('disabled',false);
+                        $("#primaryTitleBN")[0].setCustomValidity("");
+                    });
+                }
+            },function(err) {
+                console.error(err)
+            });
+        }
+
+        function applyInputLogicChecks()
+        {
+            $("#dateBN").attr({
+                "max": new Date().toISOString().split("T")[0],
+                "title": "Enter Release Date"
+            });
+
+            // auto seting year after release date selected
+            $("#dateBN").on('change', function() {
+                let dateValue = $(this).val();
+                if (dateValue && dateValue.includes("-")) {
+                    let setYear = Number(dateValue.split("-")[0]);
+                    if (!isNaN(setYear)) {
+                        $("#YearBN").val(setYear);
+                    }
+                }
+            });
+
+            $("#YearBN").attr({
+                "max": new Date().getFullYear(),
+                "placeholder": "1900-" + new Date().getFullYear(),
+                "title" : "Enter Year (Has to be before release date!)"
+            });
+
+            // checkng that year is not after release date
+            $("#YearBN").on('change', function() {
+                let dateValue = $("#dateBN").val();
+                let yearValue = Number($(this).val());
+                if (dateValue && dateValue.includes("-") && !isNaN(yearValue)) {
+                    let releaseDateYear = Number(dateValue.split("-")[0]);
+                    if (!isNaN(releaseDateYear) && yearValue > releaseDateYear) {
+                        this.setCustomValidity("Year has to lower/equal to the Year of Release Date!")
+                        this.reportValidity();
+                        this.validity.valid = false;
+                    } else {
+                        this.validity.valid = true;
+                        this.setCustomValidity("");
+                    }
+                }
+            });
+
+            // description validity check
+            $("#descriptionBN").on('keyup', function() {
+                let description = $(this).val()
+                let regPattern = /^[A-Za-z0-9,.:\-\s]+$/;
+
+                if(description === "") {   
+                    this.validity.valid = true;
+                    this.setCustomValidity("");
+                    return;
+                }
+
+                if(!regPattern.test(description)) {
+                    this.setCustomValidity("Only [a-zA-Z0-9,.-:] and space are allowed !");
+                    this.reportValidity();
+                    this.validity.valid = false;
+                } else {
+                    this.validity.valid = true;
+                    this.setCustomValidity("");
+                }
+            });
+
+            $("#genresBN").select2({
+                placeholder: 'Choose Movie Genres',
+                allowClear: true
+            });
+
+            $('#languageBN').select2({
+                placeholder: 'Choose Movie Language',
+                allowClear: true
+            });
+        }
+
+        function getLangAndGenre()
+        {
+            let sendURL = serverURL + "GetGenresLanguage";
+            ajaxCall("GET",sendURL,null,function(res) {
+                if(res != null)
+                {
+                    language = res.language.sort();
+                    genres = res.genres.sort();
+
+                    language.forEach(lang => {
+                        $('#languageBN').append(
+                            $('<option>',{
+                                value: lang,
+                                text: lang
+                            })
+                        )
+                    });
+                    genres.forEach(genre => {
+                        $('#genresBN').append(
+                                $('<option>',{
+                                    value: genre,
+                                    text: genre
+                                })
+                            )
+                    })
+                }
+            }, function(err) { 
+                console.error("Error:",err);
+            })
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div id="navOption"><a href="index.html">🏠 Home</a></div>
+            <div id="navOption"><a href="myMovies.html">🎬 My Movies</a></div>
+            <div id="navOption" class="active"><a href="newMovie.html">📝 Create New Movie</a></div>
+        </nav>
+        <nav>
+            <div id="navOption"><a href="EditUser.html">⚙️ Edit My Profile</a></div>
+            <div id="navOption" class="logoutBtn"><a href="index.html">⍈ Logout</a></div>
+        </nav>
+    </header>
+
+    <div style="display: none;" id="message"></div>
+
+    <form id="movieForm">
+        <h1>New Movie Form</h1>
+
+        <div class="form-section">
+            <label for="primaryTitleBN">Title ✍🏻 <span class="required">✱</span></label>
+            <input type="text" id="primaryTitleBN" pattern="[a-zA-Z0-9 ]{5,}" placeholder="Enter Title"
+                   title="At least 5 characters. Only letters, numbers, and spaces are allowed." required>
+        </div>
+
+        <div class="form-section">    
+            <label for="dateBN">Release Date 📅 <span class="required">✱</span></label>
+            <input type="date" id="dateBN" required min="1900-01-01">
+        </div>
+
+        <div class="form-section">
+            <label for="YearBN">Year 🗓 <span class="required">✱</span></label>
+            <input type="number" id="YearBN" required min="1900">
+        </div>
+
+        <div class="form-section"> 
+            <label for="urlBN">Url 🔗</label>
+            <input type="url" id="urlBN" placeholder="Enter website"
+                   title="Enter a valid URL (e.g., https://example.com)">
+        </div>
+
+        <div class="form-section"> 
+            <label for="primaryImageBN">Primary Image 🖼️ <span class="required">✱</span></label>
+            <input type="text" id="primaryImageBN" placeholder="Enter link to movie's image" 
+                   pattern="(https?:\/\/)?[^\s]+?\.(jpg|jpeg|png|gif|bmp|webp)$" 
+                   title="Enter a valid image URL ending with .jpg, .jpeg, .png, .gif, .bmp or .webp" required>
+        </div>  
+
+        <div class="form-section"> 
+            <label for="languageBN">Language 🌍 <span class="required">✱</span></label>
+            <select id="languageBN" title="Enter Movie Language" required></select>
+        </div>
+
+        <div class="form-section"> 
+            <label for="genresBN">Genres 🎞️ </label>
+            <select id="genresBN" title="Select Genres" multiple></select>
+        </div>
+    
+        <div class="form-section">
+            <label>Is Adult 🔞 </label>
+            <div class="radio-group">
+                <input type="radio" name="isAdultBN" value="false" checked><label>❌</label>
+                <input type="radio" name="isAdultBN" value="true"> <label>✅️</label>
+            </div>
+        </div>
+
+        <div class="form-section"> 
+            <label for="runtimeBN" style="margin-top: 6px;">Runtime ⏱ <span class="required">✱</span></label>
+            <input type="number" id="runtimeBN" required min="10" max="500" title="Enter Movies Runtime Length, At least 10 min to 500 min"
+                placeholder="Enter runtime in minutes" step="1">
+        </div>
+
+        <div class="form-section">
+            <label for="budgetBN">Budget 💲</label>
+            <input type="number" id="budgetBN" min="100000" value="100000" step="any" title="Enter Movie Production title">
+        </div>
+
+        <div class="form-section"> 
+            <label for="grossWorldwideBN">Gross World Wide 💰</label>
+            <input type="number" id="grossWorldwideBN" min="0" value="0" step="any" title="Enter Total Gross World Wide">
+        </div>
+
+        <div class="form-section"> 
+            <label for="numVotesBN">Number Of Votes 🗳️</label>
+            <input type="number" id="numVotesBN" min="0" value="0" step="1" title="Enter Movie Vote Count">
+        </div>
+
+        <div class="form-section"> 
+            <label for="ratingBN">Average Rating ⭐ (0-10)</label>
+            <input type="number" id="ratingBN" min="0" max="10" value="0" step="0.1" title="Enter Movie Average Rating">
+        </div>
+    
+        <div class="form-section full-width">
+            <label for="descriptionBN">Description 📋</label>
+            <textarea id="descriptionBN" title="Enter Movie Description, No Spoilers PLS! 😂"></textarea>
+        </div>
+        
+        <button id="submitBtn">Add Movie</button>
+    </form>
+</body>
+</html>

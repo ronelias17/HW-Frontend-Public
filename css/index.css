@@ -1,0 +1,162 @@
+#msgDiv {
+justify-self: center;
+margin: 20px;
+border-radius: 12px;
+padding: 15px;
+background-color: rgb(250, 250, 250);
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+backdrop-filter: blur(8px);
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+gap: 20px;
+width: 620px;
+} 
+
+#msgDiv:hover {
+box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+#msgDiv h1{margin: 10px;}
+
+#title{
+text-align: center;
+font-size: 1.75em;
+color: #2c3e50;
+margin-bottom: 15px;
+}
+
+#msgDiv p {
+line-height: 1.51;
+color: #555;
+margin: 10px 0;
+font-size: 1em;
+text-align: justify;
+}
+
+#btn{
+position: absolute;
+top:90%;
+left: 11%;
+height: 8%;
+width: 15%;
+border-radius: 15px;
+background-color: rgba(34, 231, 34, 0.705);
+}
+
+input[type='date'],input[type='text']
+{border-radius: 8px;}
+
+#dates{margin-top: 3px;}
+
+.hover{
+animation: glow 4.5s ease-in-out infinite; 
+scale: 1.01;
+}
+
+.option{
+position: relative;
+margin: 3px;
+}
+
+#searchBtn{
+position: absolute;
+right:0.01% ;
+bottom: 0.011%;
+border-radius: 3px;
+padding: 3px;
+background-color: #3e5975;
+color: white;
+border: none;
+font-weight: 600;
+font-size: 16px;
+padding: 8px 14px;
+cursor: pointer;
+}
+
+#searchBtn:disabled {
+background-color: #cccccc;
+color: #515151;
+box-shadow: 0 2px 3px rgba(192, 18, 18, 0.239);
+cursor: not-allowed;
+}
+
+*:disabled:hover {
+cursor: not-allowed !important;
+}
+
+#cancelRent:disabled, #confirmBtn:disabled {
+    transform: none !important;
+    background: #787a7d !important;
+}
+
+#overlay-div {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.564);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.rent-form {
+    background: white;
+    padding: 25px 35px;
+    border-radius: 10px;
+    min-width: 400px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    position: relative;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+.rent-form #title{
+    text-decoration: underline;
+}
+
+#buttonDiv {
+    justify-self: center;
+}
+
+#buttonDiv > button{
+    background-color: #3e5975;
+    color: white;
+    border: none;
+    padding: 16px 22px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+    align-self: center;
+    margin: 0px 10px;
+    min-width: 100px;
+    transition: transform 0.5s ease, background-color 0.4s ease;
+}
+
+#buttonDiv > button:hover{
+    transform: scale(1.03);
+    background-color: #316dad;
+    box-shadow: 0 0 12px rgba(0,0,0,0.1);
+}
+
+.msg {
+    color: #3e5975;
+    margin-top: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+@keyframes glow {
+0% {
+box-shadow: 0 0 4px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.15), 0 0 14px rgba(10, 217, 107, 0.8);
+}
+25% {
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.15), 0 0 14px rgba(232, 34, 34, 0.8);
+}
+50% {
+box-shadow: 0 0 4px rgba(0, 0, 0, 0.1), 0 0 6px rgba(0, 0, 0, 0.1), 0 0 14px rgb(11, 126, 207);
+}
+100% {
+box-shadow: 0 0 4px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.15), 0 0 14px rgba(233, 206, 1, 0.8);
+}
+}

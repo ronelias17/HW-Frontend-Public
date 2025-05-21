@@ -1,0 +1,169 @@
+:root {
+    --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    
+    --color-text-primary: #2c3e50; /* Dark desaturated blue/grey */
+    --color-text-secondary: #4a5568; /* Medium grey for less prominent text */
+    --color-text-muted: #718096; /* Lighter grey for muted text if needed */
+
+    --color-bg-body: #f0f2f5; /* Light grey page background */
+    --color-bg-container: #ffffff; /* White content background */
+    --color-bg-table-header: #f8f9fa; /* Very light grey for table header */
+    --color-bg-table-row-hover: #f7fafc; /* Lighter grey for row hover */
+
+    --color-border-table: #e2e8f0; /* Light grey border for table elements */
+
+    --color-status-active-bg: #d1fae5; /* Light success green background */
+    --color-status-active-text: #065f46; /* Dark success green text */
+    --color-status-inactive-bg: #fee2e2; /* Light error red background */
+    --color-status-inactive-text: #991b1b; /* Dark error red text */
+
+    --color-button-activate-bg: #dbeafe; /* Pale blue for "Activate" button */
+    --color-button-activate-text: #1e40af; /* Dark blue text for "Activate" */
+    --color-button-activate-hover-bg: #d0e1fd; /* Slightly darker pale blue on hover */
+
+    --color-button-deactivate-bg: #fef3c7; /* Pale yellow for "Deactivate" button */
+    --color-button-deactivate-text: #92400e; /* Dark amber/brown text for "Deactivate" */
+    --color-button-deactivate-hover-bg: #fde8b3; /* Slightly darker pale yellow on hover */
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-container: 0 6px 16px rgba(0, 0, 0, 0.08); /* Softer, more diffuse shadow */
+
+    --border-radius-sm: 0.25rem; /* 4px */
+    --border-radius-md: 0.375rem; /* 6px */
+    --border-radius-lg: 0.5rem; /* 8px */
+    --border-radius-pill: 9999px; 
+}
+body {
+    font-family: var(--font-family-sans);
+    margin: 0;
+    padding: 20px; /* Padding around the entire page */
+    background-color: var(--color-bg-body);
+    color: var(--color-text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align container to the top */
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px; /* Slightly wider for better table display */
+    background: var(--color-bg-container);
+    padding: 30px; /* Increased padding inside the container */
+    border-radius: var(--border-radius-lg); 
+    box-shadow: var(--shadow-container);
+    margin-top: 20px; /* Margin to push container from viewport top */
+    margin-bottom: 20px; /* Margin at the bottom */
+}
+
+h1 {
+    text-align: center;
+    color: var(--color-text-primary);
+    margin-bottom: 30px; /* More space below heading */
+    font-size: 1.8em; /* Slightly refined size */
+    font-weight: 600; /* Clear, but not overly heavy */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse; 
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 14px 18px; /* Increased cell padding */
+    text-align: left;
+    border-bottom: 1px solid var(--color-border-table);
+}
+
+th {
+    background-color: var(--color-bg-table-header);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    font-size: 0.85em; /* Smaller, more professional header text */
+    text-transform: uppercase;
+    letter-spacing: 0.05em; /* Slight letter spacing for headers */
+}
+
+/* Align action buttons in the center of their cell */
+.action-cell {
+    text-align: center;
+}
+
+/* Remove bottom border from the last row's cells for a cleaner table end */
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Removed tr:nth-child(even) for a cleaner, less busy look */
+
+tr:hover {
+    background-color: var(--color-bg-table-row-hover); /* Subtle hover effect */
+}
+
+.status { 
+    padding: 6px 12px;
+    border-radius: var(--border-radius-pill); 
+    font-weight: 500;
+    font-size: 0.8em; /* Slightly smaller status text */
+    text-transform: uppercase;
+    display: inline-block;
+    min-width: 70px; /* Ensure consistent width for status pills */
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.status-active {
+    background-color: var(--color-status-active-bg);
+    color: var(--color-status-active-text);
+}
+
+.status-inactive {
+    background-color: var(--color-status-inactive-bg);
+    color: var(--color-status-inactive-text);
+}
+
+.toggle-button {
+    padding: 9px 16px; /* Balanced padding */
+    border: none;
+    border-radius: var(--border-radius-md); /* Slightly softer corners */
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    font-size: 0.9em;
+    min-width: 120px; /* Ensure consistent button width */
+}
+
+.toggle-button:hover {
+    box-shadow: var(--shadow-sm); /* Subtle shadow on hover */
+}
+.toggle-button:active {
+    transform: scale(0.96); /* Slightly less aggressive press effect */
+    box-shadow: none;
+}
+
+.toggle-button:focus-visible {
+    outline: 2px solid var(--color-text-primary);
+    outline-offset: 2px;
+}
+
+/* Styles for "Deactivate" button (when user is active) */
+.toggle-button-deactivate { 
+    background-color: var(--color-button-deactivate-bg);
+    color: var(--color-button-deactivate-text);
+}
+.toggle-button-deactivate:hover {
+    background-color: var(--color-button-deactivate-hover-bg);
+}
+
+
+/* Styles for "Activate" button (when user is inactive) */
+.toggle-button-activate { 
+    background-color: var(--color-button-activate-bg);
+    color: var(--color-button-activate-text);
+}
+.toggle-button-activate:hover {
+    background-color: var(--color-button-activate-hover-bg);
+}

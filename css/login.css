@@ -1,0 +1,99 @@
+#loginForm {
+margin:auto;
+margin-top: 100px;
+background-color: rgb(250, 250, 250);
+padding: 30px 40px;
+border-radius: 8px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+display: flex;
+flex-direction: column;
+width: 500px;
+gap: 10px;
+}
+
+h1 {
+text-align: center;
+font-weight: 600;
+font-size: 20px;
+margin-bottom: 15px;
+color: #244f7b;
+}
+
+label {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+#emailBN, #passwordBN{
+padding: 10px;
+border: 1px solid #ccc;
+border-radius: 5px;
+font-size: 14px;
+outline: none;
+transition: border-color 0.3s;
+}
+
+#emailBN:focus, #passwordBN:focus {
+border-color: #007BFF;
+}
+
+#loginBtn{
+background-color: #3e5975;
+color: white;
+border: none;
+margin-top: 8px;
+padding: 16px 22px;
+border-radius: 6px;
+font-weight: 600;
+font-size: 16px;
+cursor: pointer;
+align-self: center;
+width: 45%;
+transition: transform 0.5s ease, background-color 0.4s ease;
+}
+
+#loginBtn:hover {
+    background-color: #2e5d8f;
+    transform: translateY(6px) scale(1.03);
+}
+
+#loginBtn:disabled {
+    transform: none !important;
+    background: #787a7d;
+}
+
+#loginRef {
+font-size: 16px;
+text-align: center;
+}
+
+#loginRef a {
+font-size: 16px;
+color: #0c64c3;
+text-decoration: none;
+font-weight: 600;
+}
+
+#loginRef a:hover {
+text-decoration: underline;
+}
+
+#message {
+text-align: center;
+margin-top: 10px;
+color: red;
+font-weight: 500;
+font-size: 16px;
+line-height:125%
+}
+
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+
+#rotate {
+display: inline-block;
+animation: spin 1.5s linear infinite;
+scale: 1.3;
+}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Register</title>
+
+    <!-- jquery cdn-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="crossorigin="anonymous"></script>
+    <script src="scripts/AjaxCall.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/register.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+
+    <script>
+        let serverURL = 'https://proj.ruppin.ac.il/cgroup5/test2/tar1/api/Users/Register';
+
+        function ifUserLogged() { 
+            const loggedUser = localStorage.getItem('loggedUser');
+            if (loggedUser) { 
+                window.location.href = 'index.html'; 
+            }
+        }
+        ifUserLogged();
+
+        $(document).ready(function () {
+            $('#registerForm').submit(function (event) {
+                event.preventDefault();
+
+                var registerData = {
+                    Name:  $('#nameBN').val(),
+                    Email:  $('#emailBN').val(),
+                    Password: $('#passwordBN').val(),
+                    Active: true
+                };
+
+                ajaxCall("POST", serverURL, JSON.stringify(registerData), SCB, ECB);
+            })
+        })
+
+        function SCB(response) {
+            if (response === true) {
+                $('#message').html('Thank you for registering <span id="rotate">🤓</span>! You can now log in<br>Redirecting to login page ...').css('color', 'black').fadeIn();
+                $('#emailBN, #passwordBN, #nameBN, input[name="isActive"]').prop('disabled', true).css('background-color', '#b0b0b093');
+                $('.submitBtn').prop('disabled',true)
+
+                setTimeout(function() {
+                    window.location.href = `login.html?email=${encodeURIComponent($('#emailBN').val())}`;
+                }, 4000); 
+            } else {
+                $('#message').html(`Email already in use <span id="rotate">😭</span>. Please choose Another Email.`).fadeIn().delay(6000).fadeOut();
+            }
+        }
+
+        function ECB(err) {
+            console.error("Error fetching data:", err);
+        }
+
+    </script>
+
+</head>
+<body>
+    <header>
+        <nav>
+            <div id="navOption"><a href="index.html">🏠 Home</a></div>
+            <div id="navOption" class="mute"><a class="mute" href="login.html">🎬 My Movies</a></div>
+            <div id="navOption" class="mute"><a class="mute" href="login.html">📝 Create New Movie</a></div>
+        </nav>
+        <nav>
+            <div id="navOption"> <a href="login.html">👤 Login</a></div>
+            <div id="navOption" class="active"> <a href="register.html">🪪 Register</a></div>
+        </nav>
+    </header>
+
+    <form id="registerForm">
+        <h1 id="regTitle">Registeration Form</h1>
+        <label for="email">Email<span class="required"> ✱</span> </label>
+        <input type = "text" id = "emailBN" name = "email" placeholder="Enter your Email here" pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" 
+            title="Please enter a valid Email Address!" required>
+
+        <label for="password">Password<span class="required"> ✱</span> </label>
+        <input type="password" id="passwordBN" name="password" placeholder="Enter your Password here" pattern="^(?=.*[A-Z])(?=.*\d).{8,}$" 
+            title="Password must be at least 8 characters long, contain at least one uppercase letter and one number!" required>
+
+        <label for="name">Name<span class="required"> ✱</span> </label>
+        <input type = "text" id = "nameBN" name = "name" placeholder="Enter your Name here" pattern="^[A-Za-z]{2,}$" required>
+
+        <input type="submit" class="submitBtn" value="Register">
+        <p id="registerRef">Already Have an account ?<br><a href="login.html" id="registerClickable">Login Here!</a></p>
+        <div id="message" style="display: none;"></div>
+    </form>
+</body>
+</html>

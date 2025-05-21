@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login</title>
+
+    <!-- jquery cdn-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="crossorigin="anonymous"></script>
+    <script src="scripts/AjaxCall.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/login.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+
+    <script>
+        let serverURL = 'https://proj.ruppin.ac.il/cgroup5/test2/tar1/api/Users/';
+
+        function ifUserLogged() { 
+            const loggedUser = localStorage.getItem('loggedUser');
+            if (loggedUser) { 
+                window.location.href = 'index.html'; 
+            }
+        }
+        ifUserLogged();
+
+        $(document).ready(function () {
+
+            checkForRef();
+
+            $('#loginForm').submit(function (event) {
+                event.preventDefault();
+
+                const loginData = {
+                    Email: $('#emailBN').val(),
+                    Password: $('#passwordBN').val()
+                };
+
+                let loginUrl = serverURL+"Login"
+                ajaxCall("POST",loginUrl,JSON.stringify(loginData),SCB,ECB);
+            })
+        })
+
+        function SCB(response) {
+            if (response.status === true) {
+                $('#message').html(`🔓Login Succeeded, Hello ${response.name} <span id="rotate">😊</span><br>Redirecting you to Homepage...`).css('color', 'black').fadeIn();
+                $('#loginBtn').prop('disabled', true);
+                $('#emailBN, #passwordBN').prop('disabled', true).css('background-color', '#b0b0b093');
+                $('#registerRef').remove();
+
+                let loggedUser = {
+                    name: response.name,
+                    id: response.id
+                }
+
+                localStorage.setItem('loggedUser',JSON.stringify(loggedUser));
+                setTimeout(function() {
+                    window.location.href = 'index.html'; 
+                }, 4000);
+            } else {
+                $('#message').text('🔒 Invalid credential. Please try again.').fadeIn().delay(2000).fadeOut();
+            }
+        }
+
+        function ECB(err) {
+            console.error("Error fetching data:", err);
+        }
+
+        function checkForRef() {
+            let email = (new URLSearchParams(window.location.search)).get('email');
+            if(email)
+                $('#emailBN').val(email);
+        }
+    </script>
+
+</head>
+<body>
+    <header>
+        <nav>
+            <div id="navOption"><a href="index.html">🏠 Home</a></div>
+            <div id="navOption" class="mute"><a class="mute" href="login.html">🎬 My Movies</a></div>
+            <div id="navOption" class="mute"><a class="mute" href="login.html">📝 Create New Movie</a></div>
+        </nav>
+        <nav>
+            <div id="navOption" class="active"><a href="login.html">👤 Login</a></div>
+            <div id="navOption"><a href="register.html">🪪 Register</a></div>
+        </nav>
+    </header>
+
+    <form id="loginForm">
+        <h1>Login</h1>
+        <label for="email">Email</label>
+        <input type = "text" id = "emailBN" name = "email" placeholder="Enter your Email here" pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" 
+            title="Please enter a valid Email Address!" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="passwordBN" name="password" placeholder="Enter your Password here" required>
+        
+        <input type="submit" id="loginBtn" value="Login">
+        <p id="loginRef">Don't have an account ? <br><a href="register.html" id="registerClickable">Register Here!</a></p>
+        <div id="message" style="display: none;"></div>
+    </form>
+</body>
+</html>

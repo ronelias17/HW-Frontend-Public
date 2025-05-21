@@ -1,0 +1,102 @@
+#registerForm {
+margin:auto;
+margin-top: 100px;
+background-color: rgb(250, 250, 250);
+padding: 30px 40px;
+border-radius: 8px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+display: flex;
+flex-direction: column;
+gap: 10px;
+width: 500px;
+}
+
+label {
+font-size: 16px;
+margin-bottom: 5px;
+}
+
+#nameBN,#emailBN,#passwordBN {
+padding: 10px;
+border-radius: 5px;
+border: 1px solid #ccc;
+font-size: 14px;
+outline: none;
+}
+
+#nameBN:focus,#emailBN:focus,#passwordBN:focus {
+    border-color: #007BFF;
+}
+
+.submitBtn{
+margin-top: 8px;
+background-color: #3e5975;
+color: white;
+border: none;
+padding: 20px 16px;
+border-radius: 6px;
+font-weight: 600;
+font-size: 16px;
+width: 40%;
+cursor: pointer;
+align-self: center;
+transition: transform 0.5s ease, background-color 0.4s ease;
+}
+
+.submitBtn:hover {
+background-color: #36669a;
+transform: translateY(6px) scale(1.03);
+}
+
+.submitBtn:disabled {
+    transform: none !important;
+    background: #4f5358;
+}
+
+h1{
+text-align: center;
+font-weight: 600;
+font-size: 20px;
+color: #1b3a59;
+margin-bottom: 15px;
+}
+
+#message {
+text-align: center;
+margin-top: 10px;
+color: red;
+font-weight: 500;
+font-size: 16px;
+line-height:125%
+}
+
+.required {
+color: red;
+}
+
+#registerRef {
+font-size: 16px;
+text-align: center;
+}
+
+#registerRef a {
+font-size: 16px;
+color: #0c64c3;
+text-decoration: none;
+font-weight: 600;
+}
+
+#registerRef a:hover {
+text-decoration: underline;
+}
+
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+
+#rotate {
+display: inline-block;
+animation: spin 1.5s linear infinite;
+scale: 1.3;
+}
